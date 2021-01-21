@@ -370,8 +370,18 @@ void ui()
 	tm0cnt=REG_TM0CNT_H;
 	REG_TM0CNT_H=0;				//stop sound (directsound)
 
+	selected=0;
+//	drawuiX[mb]();
+
+	for(i=0;i<8;i++)
+	{
+		waitframe();
+		setdarknessgs(i);		//Darken game screen
+		ui_x=224-i*32;	//Move screen right
+		move_ui();
+	}
+
 #if FLASHCART
-	//flash_type = get_flash_type();
 	if (flash_type > 0) {
 		// Ask user if they want to save SRAM contents to Flash
 		// ROM. Asking the question here hopefully helps that
@@ -379,7 +389,6 @@ void ui()
 		ui_x=0;
 		move_ui();
 		cls(3);
-		setdarknessgs(7);
 		drawtext( 8,"    Save your progress to",0);
 		drawtext( 9,"       Flash ROM now?",0);
 		drawtext(11,"           (A) Yes",0);
@@ -389,9 +398,11 @@ void ui()
 			key=getmenuinput(mainmenuitems);
 			if (key&(A_BTN)) {
 				cls(3);
+				setdarknessgs(15);
 				drawtext(9,"          Saving...",0);
 				drawtext(10,"  Don't turn off the power.",0);
 				save_sram_FLASH();
+				setdarknessgs(7);
 				break;
 			} else if (key&(B_BTN)) {
 				break;
@@ -400,29 +411,7 @@ void ui()
 	}
 #endif
 
-	selected=0;
-//	drawuiX[mb]();
 	drawui1();
-	for(i=0;i<8;i++)
-	{
-		waitframe();
-		setdarknessgs(i);		//Darken game screen
-		ui_x=224-i*32;	//Move screen right
-		move_ui();
-	}
-
-	#if SAVE
-	{
-		int savesuccess;
-		savesuccess=backup_nes_sram(1);
-		if (!savesuccess)
-		{
-			drawui1();
-			ui_x=0;
-			move_ui();
-		}
-	}
-	#endif
 
 	oldkey=~REG_P1;			//reset key input
 	do {
@@ -692,7 +681,20 @@ void exit_()
 	writeconfig();					//save any changes
 	if (autostate&2)
 	{
+#if !FLASHCART
 		quicksave();
+#endif
+	}
+#endif
+#if FLASHCART
+	if (flash_type > 0) {
+		// Save SRAM contents to Flash before exiting/restarting
+		cls(3);
+		setdarknessgs(15);
+		drawtext(9,"          Saving...",0);
+		drawtext(10,"  Don't turn off the power.",0);
+		save_sram_FLASH(); // Save SRAM contents to Flash ROM
+		cls(3);
 	}
 #endif
 

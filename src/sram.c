@@ -507,6 +507,9 @@ void managesram() {
 	int i;
 	int menuitems;
 	int offset=0;
+#if FLASHCART
+	u8 update_flash = 0;
+#endif
 
 	getsram();
 
@@ -521,10 +524,24 @@ void managesram() {
 		if(i&SELECT) {
 			updatestates(selected,1,SRAMSAVE);
 			if(selected==menuitems-1) selected--;	//deleted last entry.. move up one
+#if FLASHCART
+			update_flash = 1;
+#endif
 		}
 		if(i&(SELECT+UP+DOWN+LEFT+RIGHT))
 			drawstates(SRAMMENU,&menuitems,&offset,0);
 	} while(menuitems && !(i&(L_BTN+R_BTN+B_BTN)));
+
+#if FLASHCART
+	if (flash_type > 0 && update_flash == 1) {
+		cls(3);
+		setdarknessgs(15);
+		drawtext(32+ 9,"          Saving...",0);
+		drawtext(32+10,"  Don't turn off the power.",0);
+		save_sram_FLASH();
+		setdarknessgs(7);
+	}
+#endif
 	scrollr();
 }
 
@@ -533,6 +550,9 @@ void deletemenu(int statesize)
 	int i;
 	int menuitems;
 	int offset=0;
+#if FLASHCART
+	u8 update_flash = 0;
+#endif
 
 	getsram();
 
@@ -544,11 +564,25 @@ void deletemenu(int statesize)
 		{
 			updatestates(selected,1,-1);
 			if (selected==menuitems-1) selected--;
+#if FLASHCART
+			update_flash = 1;
+#endif
 		}
 		if(i&(SELECT+UP+DOWN+LEFT+RIGHT))
 			drawstates(DELETEMENU,&menuitems,&offset,statesize);
 	} while(!(i&(L_BTN+R_BTN+B_BTN)));
 	getsram();
+
+#if FLASHCART
+	if (flash_type > 0 && update_flash == 1) {
+		cls(3);
+		setdarknessgs(15);
+		drawtext(32+ 9,"          Saving...",0);
+		drawtext(32+10,"  Don't turn off the power.",0);
+		save_sram_FLASH();
+		setdarknessgs(7);
+	}
+#endif
 }
 
 
@@ -557,6 +591,9 @@ void savestatemenu() {
 	int i;
 	int menuitems;
 	int offset=0;
+#if FLASHCART
+	u8 update_flash = 0;
+#endif
 
 	//	ewram_owner_is_sram=1;  //getsram sets it
 	
@@ -571,14 +608,35 @@ void savestatemenu() {
 	do {
 		i=getmenuinput(menuitems);
 		if(i&(A_BTN)) {
-			if(!updatestates(selected,0,STATESAVE))
+			if(!updatestates(selected,0,STATESAVE)) {
 				writeerror();
+			} else {
+#if FLASHCART
+				update_flash = 1;
+#endif
+			}
 		}
-		if(i&SELECT)
+		if(i&SELECT) {
 			updatestates(selected,1,STATESAVE);
+#if FLASHCART
+			update_flash = 1;
+#endif
+		}
 		if(i&(SELECT+UP+DOWN+LEFT+RIGHT))
 			drawstates(SAVEMENU,&menuitems,&offset,0);
 	} while(!(i&(L_BTN+R_BTN+A_BTN+B_BTN)));
+
+#if FLASHCART
+	if (flash_type > 0 && update_flash == 1) {
+		cls(3);
+		setdarknessgs(15);
+		drawtext(32+ 9,"          Saving...",0);
+		drawtext(32+10,"  Don't turn off the power.",0);
+		save_sram_FLASH();
+		setdarknessgs(7);
+	}
+#endif
+
 	scrollr();
 }
 
@@ -725,14 +783,22 @@ bool quickload() {
 bool quicksave() {
 	stateheader *sh;
 	int i;
+#if FLASHCART
+	u8 update_flash = 0;
+#endif
 
 	if(!using_flashcart())
 		return false;
 
 //	ewram_owner_is_sram=1;	//findstate appears later, sets it to 1
 
+	cls(3);
 	setdarknessgs(7);	//darken
-	drawtext(32+9,"           Saving.",0);
+	drawtext(32+9,"          Saving...",0);
+#if FLASHCART
+	setdarknessgs(15);
+	drawtext(32+10,"  Don't turn off the power.",0);
+#endif
 
 	i=savestate(BUFFER2);
 	compressstate(i,STATESAVE,BUFFER2,BUFFER1);
@@ -742,7 +808,19 @@ bool quicksave() {
 	{
 		writeerror();
 		return false;
+	} else {
+#if FLASHCART
+		update_flash = 1;
+#endif
 	}
+
+#if FLASHCART
+	if (flash_type > 0 && update_flash == 1) {
+		save_sram_FLASH();
+	}
+	setdarknessgs(7);
+#endif
+
 	cls(2);
 	return true;
 }
@@ -956,6 +1034,9 @@ void loadstatemenu() {
 	int offset=0;
 	int menuitems;
 	u32 sum;
+#if FLASHCART
+	u8 update_flash = 0;
+#endif
 
 	//	ewram_owner_is_sram=1;  //getsram sets it
 	getsram();
@@ -993,10 +1074,25 @@ void loadstatemenu() {
 		} else if(key&SELECT) {
 			updatestates(selected,1,STATESAVE);
 			if(selected==menuitems-1) selected--;	//deleted last entry? move up one
+#if FLASHCART
+			update_flash = 1;
+#endif
 		}
 		if(key&(SELECT+UP+DOWN+LEFT+RIGHT))
 			sh=drawstates(LOADMENU,&menuitems,&offset,0);
 	} while(menuitems && !(key&(L_BTN+R_BTN+A_BTN+B_BTN)));
+
+#if FLASHCART
+	if (flash_type > 0 && update_flash == 1) {
+		cls(3);
+		setdarknessgs(15);
+		drawtext(32+ 9,"          Saving...",0);
+		drawtext(32+10,"  Don't turn off the power.",0);
+		save_sram_FLASH();
+		setdarknessgs(7);
+	}
+#endif
+
 	scrollr();
 }
 
