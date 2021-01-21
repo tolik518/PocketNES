@@ -39,6 +39,7 @@ void rommenu(void) {
 		drawtext( 8+32,"  Flash ROM not detected.",0);
 		drawtext(10+32,"  Batteryless SRAM saving",0);
 		drawtext(11+32,"     will be disabled.",0);
+		drawtext(19+32,"Batteryless mod by Lesserkuma",0);
 		for(int i=0;i<150;i++) {	//wait 2.5 seconds
 			waitframe();
 		}

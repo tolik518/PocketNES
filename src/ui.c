@@ -693,6 +693,7 @@ void exit_()
 		setdarknessgs(15);
 		drawtext(9,"          Saving...",0);
 		drawtext(10,"  Don't turn off the power.",0);
+		drawtext(19,"Batteryless mod by Lesserkuma",0);
 		save_sram_FLASH(); // Save SRAM contents to Flash ROM
 		cls(3);
 	}
