@@ -8,7 +8,7 @@
 #define DEBUG 0				//Set to 1 to have code called at the end of each instruction (such as logging)
 
 //#define VERSION_NUMBER "X alpha 3"
-#define VERSION_NUMBER "2013-07-01"
+#define VERSION_NUMBER "2021-01-21"
 //#define VERSION_NUMBER "DO NOT RELEASE"
 
 //default options
@@ -54,6 +54,7 @@
 #define MOVIEPLAYER 0		//This is a GBA Movie Player build
 #define CRASH 1				//Enables the crash detector (if it fails to complete running a frame within 5 seconds, shows a stack dump)
 #define VISOLY 1			//Include RESET code for the Flash2Advance and EZ4 cartridges
+#define FLASHCART 1			//This is a build that saves to reproduction/bootleg flashcarts batteryless
 #define ROMMENU 1
 
 #if defined COMPY

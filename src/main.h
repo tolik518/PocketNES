@@ -34,6 +34,19 @@ void cls(int chrmap);
 void setdarknessgs(int dark);
 void setbrightnessall(int light);
 
+#if FLASHCART
+	#define AGB_ROM  ((u8*)0x8000000)
+	#define AGB_SRAM ((u8*)0xE000000)
+	#define AGB_SRAM_SIZE 64*1024
+	#define _FLASH_WRITE(pa, pd) { *(((u16 *)AGB_ROM)+((pa)/2)) = pd; __asm("nop"); }
+	extern u32 total_rom_size;
+	extern u32 flash_sram_area;
+	extern u8 flash_type;
+	extern u32 get_flash_type();
+	void flash_write(u8 flash_type, u32 sa);
+	void save_sram_FLASH();
+#endif
+
 #ifdef __cplusplus
 }
 #endif

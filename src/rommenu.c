@@ -34,6 +34,17 @@ void rommenu(void) {
 	#if LINK
 	resetSIO((joycfg&~0xff000000) + 0x20000000);//back to 1P
 	#endif
+	#if FLASHCART
+	if (flash_type == 0) {
+		drawtext( 8+32,"  Flash ROM not detected.",0);
+		drawtext(10+32,"  Batteryless SRAM saving",0);
+		drawtext(11+32,"     will be disabled.",0);
+		for(int i=0;i<150;i++) {	//wait 2.5 seconds
+			waitframe();
+		}
+		cls(3);
+	}
+	#endif
 
 	if(pogoshell || roms <= 1)
 	{

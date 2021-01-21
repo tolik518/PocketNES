@@ -370,6 +370,36 @@ void ui()
 	tm0cnt=REG_TM0CNT_H;
 	REG_TM0CNT_H=0;				//stop sound (directsound)
 
+#if FLASHCART
+	//flash_type = get_flash_type();
+	if (flash_type > 0) {
+		// Ask user if they want to save SRAM contents to Flash
+		// ROM. Asking the question here hopefully helps that
+		// they don't forget saving before turning off.
+		ui_x=0;
+		move_ui();
+		cls(3);
+		setdarknessgs(7);
+		drawtext( 8,"    Save your progress to",0);
+		drawtext( 9,"       Flash ROM now?",0);
+		drawtext(11,"           (A) Yes",0);
+		drawtext(12,"           (B) No",0);
+		while (1) {
+			drawclock();
+			key=getmenuinput(mainmenuitems);
+			if (key&(A_BTN)) {
+				cls(3);
+				drawtext(9,"          Saving...",0);
+				drawtext(10,"  Don't turn off the power.",0);
+				save_sram_FLASH();
+				break;
+			} else if (key&(B_BTN)) {
+				break;
+			}
+		}
+	}
+#endif
+
 	selected=0;
 //	drawuiX[mb]();
 	drawui1();
@@ -665,6 +695,7 @@ void exit_()
 		quicksave();
 	}
 #endif
+
 	fadetowhite();
 	REG_DISPCNT=FORCE_BLANK;		//screen OFF
 	ui_x=0;
