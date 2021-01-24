@@ -211,15 +211,15 @@ void C_entry()
 		{
 			//count roms
 			p+=*(u32*)(p+32)+48;
-			#if FLASHCART
+#if FLASHCART
 			total_rom_size=p-0x8000000;
-			#endif
+#endif
 			p=find_nes_header(p);
 			i++;
 		}
 		roms=i;
 		
-		#if FLASHCART
+#if FLASHCART
 		flash_type = get_flash_type();
 		if (flash_type > 0) {
 			// Determine the size of the flash chip by checking for ROM loops,
@@ -254,11 +254,28 @@ void C_entry()
 			}
 			
 			// Finally, restore the SRAM data and proceed.
-			REG_IME = 0;
 			bytecopy(AGB_SRAM, ((u8*)AGB_ROM+flash_sram_area), AGB_SRAM_SIZE);
-			REG_IME = 1;
+		
+		} else { // Emulator mode?
+			if ((*(u32*)(AGB_ROM+0x400000-0x40000) == STATEID) || (*(u32*)(AGB_ROM+0x400000-0x40000) == STATEID2)) {
+				flash_sram_area = 0x400000-0x40000;
+			} else if ((*(u32*)(AGB_ROM+0x800000-0x40000) == STATEID) || (*(u32*)(AGB_ROM+0x800000-0x40000) == STATEID2)) {
+				flash_sram_area = 0x800000-0x40000;
+			} else if ((*(u32*)(AGB_ROM+0x1000000-0x40000) == STATEID) || (*(u32*)(AGB_ROM+0x1000000-0x40000) == STATEID2)) {
+				flash_sram_area = 0x1000000-0x40000;
+			} else if ((*(u32*)(AGB_ROM+0x2000000-0x40000) == STATEID) || (*(u32*)(AGB_ROM+0x2000000-0x40000) == STATEID2)) {
+				flash_sram_area = 0x2000000-0x40000;
+			}
+			if (flash_sram_area != 0) {
+				bytecopy(AGB_SRAM, ((u8*)AGB_ROM+flash_sram_area), AGB_SRAM_SIZE);
+				bytecopy(AGB_SRAM, ((u8*)AGB_ROM+flash_sram_area), AGB_SRAM_SIZE/2); // some emulators don't like 64 KB of SRAM, so at least give them the first 32 KB again
+			}
 		}
-		#endif
+		// Failsafe: Holding SELECT+UP+B on boot will invalidate SRAM
+		if (((*(u16 *)(0x4000130))) == 0x03B9) {
+			*(u32 *)AGB_SRAM = 0xFFFFFFFF;
+		}
+#endif
 		
 		if (i == 0)
 		{
@@ -270,11 +287,12 @@ void C_entry()
 			drawtext( 1,"     No NES ROMs found.",0);
 			drawtext( 3,"You can build a compilation",0);
 			drawtext( 4,"using PocketNES Menu Maker.",0);
-			#if FLASHCART
+#if FLASHCART
 			drawtext( 9," This version of PocketNES",0);
 			drawtext(10,"     supports saving on",0);
 			drawtext(11,"batteryless repro flashcarts.",0);
-			#endif
+			drawtext(13,"    https://git.io/JtsMs",0);
+#endif
 			strmerge(str,"PocketNES ", VERSION_NUMBER);
 			drawtext(19,str,0);
 			#endif
@@ -417,6 +435,7 @@ u32 get_flash_type() {
 	rom_data = *(u32 *)AGB_ROM;
 	
 	// Type 1
+	_FLASH_WRITE(0, 0xFF);
 	_FLASH_WRITE(0, 0x90);
 	data = *(u32 *)AGB_ROM;
 	_FLASH_WRITE(0, 0xFF);
@@ -427,6 +446,7 @@ u32 get_flash_type() {
 	}
 	
 	// Type 2
+	_FLASH_WRITE(0, 0xF0);
 	_FLASH_WRITE(0xAAA, 0xA9);
 	_FLASH_WRITE(0x555, 0x56);
 	_FLASH_WRITE(0xAAA, 0x90);
@@ -439,6 +459,7 @@ u32 get_flash_type() {
 	}
 	
 	// Type 3
+	_FLASH_WRITE(0, 0xF0);
 	_FLASH_WRITE(0xAAA, 0xAA);
 	_FLASH_WRITE(0x555, 0x55);
 	_FLASH_WRITE(0xAAA, 0x90);
@@ -470,6 +491,7 @@ void flash_write(u8 flash_type, u32 sa)
 	
 	if (flash_type == 1) {
 		// Erase flash sector
+		_FLASH_WRITE(sa, 0xFF);
 		_FLASH_WRITE(sa, 0x60);
 		_FLASH_WRITE(sa, 0xD0);
 		_FLASH_WRITE(sa, 0x20);
@@ -497,6 +519,7 @@ void flash_write(u8 flash_type, u32 sa)
 	
 	} else if (flash_type == 2) {
 		// Erase flash sector
+		_FLASH_WRITE(sa, 0xF0);
 		_FLASH_WRITE(0xAAA, 0xA9);
 		_FLASH_WRITE(0x555, 0x56);
 		_FLASH_WRITE(0xAAA, 0x80);
@@ -528,6 +551,7 @@ void flash_write(u8 flash_type, u32 sa)
 	
 	} else if (flash_type == 3) {
 		// Erase flash sector
+		_FLASH_WRITE(sa, 0xF0);
 		_FLASH_WRITE(0xAAA, 0xAA);
 		_FLASH_WRITE(0x555, 0x55);
 		_FLASH_WRITE(0xAAA, 0x80);

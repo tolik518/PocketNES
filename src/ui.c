@@ -382,6 +382,7 @@ void ui()
 	}
 
 #if FLASHCART
+	if (get_sram_owner()==0) get_saved_sram();
 	if (flash_type > 0) {
 		// Ask user if they want to save SRAM contents to Flash
 		// ROM. Asking the question here hopefully helps that

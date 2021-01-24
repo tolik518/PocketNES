@@ -41,9 +41,6 @@ extern char ewram_owner_is_sram;
 EWRAM_DATA u32 save_start = SAVE_START;
 
 
-#define STATEID 0x57a731d7
-#define STATEID2 0x57a731d8
-
 #define STATESAVE 0
 #define SRAMSAVE 1
 #define CONFIGSAVE 2
@@ -815,6 +812,7 @@ bool quicksave() {
 	}
 
 #if FLASHCART
+	if (get_sram_owner()==0) get_saved_sram();
 	if (flash_type > 0 && update_flash == 1) {
 		save_sram_FLASH();
 	}
