@@ -611,6 +611,7 @@ _ABS	= 4						@absolute
 	adcs m6502_a,m6502_a,r0,ror#8
 	mov m6502_nz,m6502_a,asr#24		@NZ
 	orr cycles,cycles,#CYC_C+CYC_V	@Prepare C & V
+    biccc cycles,cycles,#CYC_C  @C
 	bicvc cycles,cycles,#CYC_V	@V
 .endm
 
@@ -618,7 +619,7 @@ _ABS	= 4						@absolute
 .macro opSRE_c
 	readmem
 	 movs r0,r0,lsr#1
-	 eors m6502_a,m6502_a,r0,lsl#24
+	 eor m6502_a,m6502_a,r0,lsl#24
 	 orr m6502_nz,m6502_a,m6502_a,lsr#24		@NZ
 	 orr cycles,cycles,#CYC_C		@Prepare C
 	writemem
@@ -627,7 +628,7 @@ _ABS	= 4						@absolute
 .macro opSRE
 	readmem
 	movs r0,r0,lsr#1
-	eors m6502_a,m6502_a,r0,lsl#24
+	eor m6502_a,m6502_a,r0,lsl#24
 	orr m6502_nz,m6502_a,m6502_a,lsr#24		@NZ
 	orrcs cycles,cycles,#CYC_C		@Prepare C
 	biccc cycles,cycles,#CYC_C
