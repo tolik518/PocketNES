@@ -539,6 +539,104 @@ _ABS	= 4						@absolute
 	writemem
 .endm
 
+.macro opDCP_c
+	readmem
+	sub r0,r0,#1
+	opCOMP m6502_a
+	writemem
+.endm
+
+.macro opDCP
+	readmem
+	sub r0,r0,#1
+
+	@ I think opCOMP is meant to go with fetch_c so here's a version that's not
+	subs m6502_nz,m6502_a,r0,lsl#24
+	mov m6502_nz,m6502_nz,asr#24	@NZ
+	orrcs cycles,cycles,#CYC_C
+	biccc cycles,cycles,#CYC_C
+	writemem
+.endm
+
+.macro opISC_c
+	readmem
+	add r0,r0,#1
+	@ SBC
+	movs r1,cycles,lsr#1			@get C
+	sbcs m6502_a,m6502_a,r0,lsl#24
+	and m6502_a,m6502_a,#0xff000000
+	mov m6502_nz,m6502_a,asr#24 		@NZ
+	orr cycles,cycles,#CYC_C+CYC_V	@Prepare C & V
+	bicvc cycles,cycles,#CYC_V		@V
+	writemem
+.endm
+
+.macro opISC
+	readmem
+	add r0,r0,#1
+	@ SBC
+	movs r1,cycles,lsr#1			@get C
+	sbcs m6502_a,m6502_a,r0,lsl#24
+	and m6502_a,m6502_a,#0xff000000
+	mov m6502_nz,m6502_a,asr#24 		@NZ
+	orr cycles,cycles,#CYC_C+CYC_V	@Prepare C & V
+	biccc cycles,cycles,#CYC_C		@C
+	bicvc cycles,cycles,#CYC_V		@V
+	writemem
+.endm
+
+.macro opRLA
+	readmem
+	 movs cycles,cycles,lsr#1		@get C
+	 adc r0,r0,r0
+	 orrs m6502_nz,r0,r0,lsl#24		@NZ
+	 adc cycles,cycles,cycles		@Set C
+	writemem
+	and m6502_a,m6502_a,r0,lsl#24
+	mov m6502_nz,m6502_a,asr#24		@NZ
+.endm
+
+.macro opRRA
+	readmem
+	 movs cycles,cycles,lsr#1		@get C
+	 orrcs r0,r0,#0x100
+	 movs r0,r0,lsr#1
+	 orr m6502_nz,r0,r0,lsl#24		@NZ
+	 adc cycles,cycles,cycles		@Set C
+	writemem
+
+	@ Put ADC here
+	movs r1,cycles,lsr#1		@get C
+	subcs r0,r0,#0x00000100
+	adcs m6502_a,m6502_a,r0,ror#8
+	mov m6502_nz,m6502_a,asr#24		@NZ
+	orr cycles,cycles,#CYC_C+CYC_V	@Prepare C & V
+	bicvc cycles,cycles,#CYC_V	@V
+.endm
+
+
+.macro opSRE_c
+	readmem
+	 movs r0,r0,lsr#1
+	 eors m6502_a,m6502_a,r0,lsl#24
+	 orr m6502_nz,m6502_a,m6502_a,lsr#24		@NZ
+	 orr cycles,cycles,#CYC_C		@Prepare C
+	writemem
+.endm
+
+.macro opSRE
+	readmem
+	movs r0,r0,lsr#1
+	eors m6502_a,m6502_a,r0,lsl#24
+	orr m6502_nz,m6502_a,m6502_a,lsr#24		@NZ
+	orrcs cycles,cycles,#CYC_C		@Prepare C
+	biccc cycles,cycles,#CYC_C
+	writemem
+.endm
+
+
+
+
 .macro opSTORE x
 	mov r0,\x,lsr#24
 	writemem
