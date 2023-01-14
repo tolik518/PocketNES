@@ -46,8 +46,8 @@ include $(DEVKITARM)/gba_rules
 TARGET		:=	pocketnes
 BUILD		:=	build
 SOURCES		:=	src
-MAPPERS		:=	src/mappers
-INCLUDES	:=	
+MAPPERS		:=	src/Mappers
+INCLUDES	:=
 
 #---------------------------------------------------------------------------------
 # options for code generation
