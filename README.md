@@ -11,7 +11,7 @@ With [pnesbuild](/nespack/pnesbuild.py) you can build the rom via command line w
 
 or you could give it a whole folder with NES files.
 ```sh
-./pnesbuild.py -o Collection.gba ../path/to/pocketnes.gba romsfolder/*.nes`
+./pnesbuild.py -o Collection.gba ../path/to/pocketnes.gba romsfolder/*.nes
 ```
 
 
